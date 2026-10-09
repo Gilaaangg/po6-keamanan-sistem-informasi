@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Praktikum Keamanan Sistem Informasi - P06</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 50%, #030712 100%);
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(99, 102, 241, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-safe: #10b981;
+      --accent-safe-bg: rgba(16, 185, 129, 0.12);
+      --accent-vuln: #ef4444;
+      --accent-vuln-bg: rgba(239, 68, 68, 0.12);
+      --accent-blue: #6366f1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .meta-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      padding: 8px 18px;
+      border-radius: 12px;
+      margin-top: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .card {
+      position: relative;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      opacity: 0.8;
+      transition: opacity 0.25s ease;
+    }
+
+    .card.safe::before {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    .card.vuln::before {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .card.safe:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .card.vuln:hover {
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .card-top {
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .status-pill {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+
+    .status-pill.safe {
+      background: var(--accent-safe-bg);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-pill.vuln {
+      background: var(--accent-vuln-bg);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .card.safe .icon-box {
+      background: var(--accent-safe-bg);
+    }
+
+    .card.vuln .icon-box {
+      background: var(--accent-vuln-bg);
+    }
+
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .features {
+      list-style: none;
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .features li {
+      font-size: 13px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .features li span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .card.safe .features li span {
+      background: #10b981;
+    }
+
+    .card.vuln .features li span {
+      background: #ef4444;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-safe {
+      background: #10b981;
+      color: #022c22;
+    }
+
+    .btn-safe:hover {
+      background: #34d399;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-vuln {
+      background: #ef4444;
+      color: #450a0a;
+    }
+
+    .btn-vuln:hover {
+      background: #f87171;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .footer a {
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer a:hover {
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="badge">Keamanan Sistem Informasi</div>
+      <h1>Praktikum P06: Chatbot LLM Security</h1>
+      <p class="subtitle">
+        Perbandingan implementasi chatbot kantin berbasis Google Gemini LLM antara versi rentan Prompt Injection dan versi aman berproteksi.
+      </p>
+      <div class="meta-box">
+        <span>NPM: <strong>24781078</strong></span>
+        <span>•</span>
+        <span>Kasus: <strong>LIVE-1</strong></span>
+        <span>•</span>
+        <span>Model: <strong>gemini-2.5-flash</strong></span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Card Versi Aman -->
+      <section class="card safe">
+        <div class="card-top">
+          <div class="card-header">
+            <div class="icon-box">🛡️</div>
+            <span class="status-pill safe">Terproteksi</span>
+          </div>
+          <h2 class="card-title">Versi AMAN</h2>
+          <p class="card-desc">
+            Dilengkapi mekanisme pertahanan terhadap Prompt Injection. Chatbot membatasi wewenang dan menolak pembuatan voucher tanpa otorisasi kasir.
+          </p>
+          <ul class="features">
+            <li><span></span> Pertahanan Prompt Injection</li>
+            <li><span></span> Validasi & sanitasi instruksi pengguna</li>
+            <li><span></span> Fitur ekspor log pengujian</li>
+          </ul>
+        </div>
+        <a href="./24781078-kantin-voucher-aman.html" class="btn btn-safe" id="btn-aman">
+          Buka Versi AMAN &rarr;
+        </a>
+      </section>
+
+      <!-- Card Versi Rentan -->
+      <section class="card vuln">
+        <div class="card-top">
+          <div class="card-header">
+            <div class="icon-box">⚠️</div>
+            <span class="status-pill vuln">Rentan</span>
+          </div>
+          <h2 class="card-title">Versi RENTAN</h2>
+          <p class="card-desc">
+            Implementasi awal tanpa pembatasan ketat. Rentan terhadap serangan manipulasi instruksi (jailbreak/bypass role) untuk membuat voucher ilegal.
+          </p>
+          <ul class="features">
+            <li><span></span> Tanpa filter instruksi adversarial</li>
+            <li><span></span> Rentan payload bypass aturan sistem</li>
+            <li><span></span> Fitur simulasi serangan 3x & log</li>
+          </ul>
+        </div>
+        <a href="./24781078-kantin-voucher-rentan.html" class="btn btn-vuln" id="btn-rentan">
+          Buka Versi RENTAN &rarr;
+        </a>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <p>Praktikum Keamanan Sistem Informasi &bull; Dideploy ke Netlify & GitHub</p>
+    </footer>
+  </div>
+</body>
+</html>
